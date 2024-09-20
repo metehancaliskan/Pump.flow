@@ -12,10 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MessageCircle, Wallet } from "lucide-react";
+import { Bitcoin, Cpu, Crown, Users, Zap } from "lucide-react";
 import CreateTokenDialog from "@/components/blocks/create-token-dialog";
+import { useRouter } from "next/navigation";
 
-export default function Component() {
+export default function MainPage() {
+  const router = useRouter();
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-2 font-mono text-xs">
       <style jsx global>{`
@@ -45,6 +47,71 @@ export default function Component() {
           }
           100% {
             filter: blur(0px);
+          }
+        }
+      `}</style>
+      <style jsx global>{`
+        @keyframes blink {
+          0%,
+          100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0;
+          }
+        }
+        @keyframes slide {
+          0% {
+            transform: translateX(100%);
+          }
+          100% {
+            transform: translateX(-100%);
+          }
+        }
+        @keyframes pixelate {
+          0% {
+            filter: blur(0px);
+          }
+          50% {
+            filter: blur(1px);
+          }
+          100% {
+            filter: blur(0px);
+          }
+        }
+        @keyframes pulse {
+          0%,
+          100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.05);
+          }
+        }
+        @keyframes rainbow {
+          0% {
+            background-color: #ff0000;
+          }
+          14% {
+            background-color: #ff7f00;
+          }
+          28% {
+            background-color: #ffff00;
+          }
+          42% {
+            background-color: #00ff00;
+          }
+          57% {
+            background-color: #0000ff;
+          }
+          71% {
+            background-color: #8b00ff;
+          }
+          85% {
+            background-color: #ff00ff;
+          }
+          100% {
+            background-color: #ff0000;
           }
         }
       `}</style>
@@ -138,80 +205,120 @@ export default function Component() {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           {[
             {
-              name: "Notepad",
-              ticker: "PAD",
-              description: "It's literally just a notepad.",
+              name: "Nako",
+              ticker: "NAKO",
+              description:
+                "the most memeable dog on solana. join the nako fam. https://nakofam.xyz/ https://x.com/NakoFamSol https://t.me/nakofamsol",
               image: "/placeholder.svg?height=100&width=100",
-            },
-            {
-              name: "Moonshine",
-              ticker: "MOON",
-              description: "The famous rarest albino alligator",
-              image: "/placeholder.svg?height=100&width=100",
-            },
-            {
-              name: "Meow Ming",
-              ticker: "Ming",
-              description: "The Tallest Cat on Solana",
-              image: "/placeholder.svg?height=100&width=100",
-            },
-            {
-              name: "Pixel Pals",
-              ticker: "PIX",
-              description: "Retro-style digital pets",
-              image: "/placeholder.svg?height=100&width=100",
-            },
-            {
-              name: "CryptoQuest",
-              ticker: "QUEST",
-              description: "Blockchain-based RPG adventure",
-              image: "/placeholder.svg?height=100&width=100",
+              creator: "ASU2ve",
+              createdAgo: "23h ago",
+              marketCap: "37.98K",
+              replies: 459,
+              isLiveStreaming: true,
             },
             {
               name: "BitBrew",
               ticker: "BREW",
               description: "Decentralized coffee marketplace",
               image: "/placeholder.svg?height=100&width=100",
+              creator: "CoffeeMan",
+              createdAgo: "2d ago",
+              marketCap: "15.5K",
+              replies: 203,
+              isLiveStreaming: false,
             },
             {
               name: "NanoNFT",
               ticker: "NNFT",
               description: "Microscopic digital collectibles",
               image: "/placeholder.svg?height=100&width=100",
+              creator: "TinyCreator",
+              createdAgo: "5h ago",
+              marketCap: "22.3K",
+              replies: 178,
+              isLiveStreaming: true,
             },
             {
               name: "VoxelVerse",
               ticker: "VOX",
               description: "3D voxel metaverse platform",
               image: "/placeholder.svg?height=100&width=100",
+              creator: "BlockBuilder",
+              createdAgo: "1d ago",
+              marketCap: "45.7K",
+              replies: 567,
+              isLiveStreaming: false,
             },
-          ].map((coin) => (
+          ].map((coin, index) => (
             <Card
+              onClick={() => {
+                router.push(`/token-detail/${coin.ticker}`);
+              }}
               key={coin.ticker}
-              className="bg-gray-800 border border-purple-500 overflow-hidden hover:scale-105 transition-transform duration-200"
+              className={`overflow-hidden hover:scale-105 transition-transform duration-200 ${
+                index % 2 === 0
+                  ? "bg-gradient-to-br from-purple-900 to-blue-900 border-2 border-green-500"
+                  : "bg-gradient-to-br from-green-900 to-teal-900 border-2 border-yellow-500"
+              }`}
             >
-              <CardHeader className="p-2">
-                <CardTitle className="text-purple-300 text-xs">
-                  {coin.name} ({coin.ticker})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-2">
-                <Avatar className="w-full h-20 rounded-md">
-                  <AvatarImage
-                    src={coin.image}
-                    alt={coin.name}
-                    className="object-cover"
-                  />
-                  <AvatarFallback className="bg-purple-900 text-purple-300">
-                    {coin.ticker}
-                  </AvatarFallback>
-                </Avatar>
-                <p className="mt-1 text-purple-200 text-[10px]">
-                  {coin.description}
-                </p>
+              <CardContent className="p-2 relative">
+                {coin.isLiveStreaming && (
+                  <Badge className="absolute top-1 right-1 text-black text-[8px] px-1 py-0.5 animate-[pulse_1s_ease-in-out_infinite,rainbow_5s_linear_infinite]">
+                    🔴 LIVE
+                  </Badge>
+                )}
+                <div className="flex items-start space-x-2">
+                  <Avatar className="w-16 h-16 rounded-md border-2 border-yellow-500">
+                    <AvatarImage
+                      src={coin.image}
+                      alt={coin.name}
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="bg-gray-800 text-yellow-500">
+                      {coin.ticker}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] text-gray-400 flex items-center">
+                      <Cpu className="w-3 h-3 mr-1 text-green-400" />
+                      Created by{" "}
+                      <span className="text-green-400 ml-1">
+                        {coin.creator}
+                      </span>{" "}
+                      {coin.createdAgo}
+                    </p>
+                    <p className="text-[10px] flex items-center">
+                      <Bitcoin className="w-3 h-3 mr-1 text-yellow-500" />
+                      <span className="text-green-400 mr-1">
+                        market cap:
+                      </span>{" "}
+                      {coin.marketCap}{" "}
+                      <Badge
+                        variant="outline"
+                        className="ml-1 bg-yellow-500 text-black text-[8px] animate-pulse"
+                      >
+                        <Crown className="w-3 h-3" />
+                      </Badge>
+                    </p>
+                    <p className="text-[10px] flex items-center">
+                      <Users className="w-3 h-3 mr-1 text-blue-400" /> replies:{" "}
+                      {coin.replies}
+                    </p>
+                    <p className="font-bold text-yellow-300 text-[11px] mt-1 flex items-center">
+                      <Zap className="w-3 h-3 mr-1 text-yellow-500" />
+                      {coin.name}{" "}
+                      <span className="text-gray-400 ml-1">
+                        (ticker: {coin.ticker})
+                      </span>
+                    </p>
+                    <p className="mt-1 text-gray-300 text-[9px] break-words">
+                      {coin.description}
+                    </p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           ))}

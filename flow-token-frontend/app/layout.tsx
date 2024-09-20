@@ -2,12 +2,9 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Web3Provider } from "@/components/providers/web3-provider";
-<<<<<<< HEAD
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import Header from "@/components/blocks/header";
 import { Button } from "@/components/ui/button";
-=======
->>>>>>> 5db3bc7abda7d526a79815c379053ffb4a7eca3d
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -35,7 +32,6 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-<<<<<<< HEAD
         <Web3Provider>
           <ThemeProvider
             attribute="class"
@@ -49,9 +45,6 @@ export default function RootLayout({
             </div>
           </ThemeProvider>
         </Web3Provider>
-=======
-        <Web3Provider>{children}</Web3Provider>
->>>>>>> 5db3bc7abda7d526a79815c379053ffb4a7eca3d
       </body>
     </html>
   );
