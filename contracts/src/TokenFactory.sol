@@ -7,6 +7,9 @@ contract TokenFactory {
     uint256 constant public DECIMALS = 10**18;
     uint256 constant public MAX_SUPPLY = 10**9 * DECIMALS;
     uint256 constant public initialSupply = MAX_SUPPLY*20/100;
+    uint256 constant public k = 23437500;
+    uint256 constant public offset = 9375*10**13;
+    uint256 constant public SCALING_FACTOR = 10**30;
 
 
     mapping(address => bool) public tokens;
@@ -27,6 +30,16 @@ contract TokenFactory {
         require(availableSupply >= amount, "Not enough tokens available");
         uint requiredFlow = calculateRequiredFlow(tokenAddress, amount);
     }
-    
+
+    function calculateRequiredFlow(address tokenAddress, uint256 amount) public returns (uint) {
+        // amount FLOW = (b-a) * (f(a) + f(b)) / 2
+        Token token = Token(tokenAddress);
+        uint b = token.totalSupply() - initialSupply + amount;
+        uint a = token.totalSupply() - initialSupply;
+        uint fa = k*a + offset;
+        uint fb = k*b + offset;
+        return (b-a)*(fa+fb)/(2*SCALING_FACTOR);
+    }
+
 
 }

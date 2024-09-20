@@ -20,4 +20,12 @@ contract TokenFactoryTest is Test {
         assertEq(factory.tokens(tokenAddress), true);
     }
 
+    function test_calculateRequiredFlow() public {
+        address tokenAddress = factory.createToken("TestToken", "TT");
+        Token token = Token(tokenAddress);
+        uint totalBuyableSupply = factory.MAX_SUPPLY() - factory.initialSupply();
+        uint requiredFlow = factory.calculateRequiredFlow(tokenAddress, totalBuyableSupply);
+        assertEq(requiredFlow, 150000*10**18);
+    }
+
 }
