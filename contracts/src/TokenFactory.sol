@@ -25,6 +25,8 @@ contract TokenFactory {
         Token token = Token(tokenAddress);
         uint availableSupply = MAX_SUPPLY - initialSupply - token.totalSupply();
         require(availableSupply >= amount, "Not enough tokens available");
+        uint requiredFlow = calculateRequiredFlow(tokenAddress, amount);
     }
+    
 
 }
