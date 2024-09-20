@@ -1,7 +1,10 @@
+"use client";
 import React from "react";
 import { Button } from "../ui/button";
 import { MessageCircle, Wallet } from "lucide-react";
 import { Badge } from "../ui/badge";
+import { useAccount } from "wagmi";
+import { ConnectKitButton } from "connectkit";
 
 type Props = {};
 
@@ -42,14 +45,7 @@ const Header = (props: Props) => {
           BTC price: $63,235 • FLOW gas: 25 gwei
         </Badge>
       </div>
-      <Button
-        variant="outline"
-        size="sm"
-        className="h-6 px-2 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-black"
-      >
-        <Wallet className="mr-1 h-3 w-3" />
-        connect wallet
-      </Button>
+      <ConnectKitButton />
     </header>
   );
 };

@@ -258,7 +258,7 @@ export default function MainPage() {
                 router.push(`/token-detail/${coin.ticker}`);
               }}
               key={coin.ticker}
-              className={`overflow-hidden hover:scale-105 transition-transform duration-200 ${
+              className={`overflow-hidden hover:scale-105 transition-transform duration-200 cursor-pointer ${
                 index % 2 === 0
                   ? "bg-gradient-to-br from-purple-900 to-blue-900 border-2 border-green-500"
                   : "bg-gradient-to-br from-green-900 to-teal-900 border-2 border-yellow-500"
