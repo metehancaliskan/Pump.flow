@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import TanstackProvider from "@/components/providers/tanstack-provider";
+import { Web3Provider } from "@/components/providers/web3-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
+import Header from "@/components/blocks/header";
+import { Button } from "@/components/ui/button";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -29,9 +32,19 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <TanstackProvider>
-          {children}
-        </TanstackProvider>
+        <Web3Provider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            forcedTheme="dark"
+            enableSystem={false}
+          >
+            <div className="bg-gray-900">
+              <Header />
+              {children}
+            </div>
+          </ThemeProvider>
+        </Web3Provider>
       </body>
     </html>
   );
