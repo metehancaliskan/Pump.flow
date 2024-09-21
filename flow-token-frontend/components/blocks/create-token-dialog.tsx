@@ -79,7 +79,7 @@ export default function CreateTokenDialog() {
       abi: contract_abi,
       address: process.env.NEXT_PUBLIC_TOKEN_FACTORY_ADDRESS! as `0x${string}`,
       chain: flowTestnet,
-      value: parseEther("0.001"),
+      value: parseEther("0.0001"),
       functionName: "createMemeToken",
       args: [data.name, data.ticker, imageUrl, data.description],
     });
