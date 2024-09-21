@@ -1,23 +1,16 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
 import CreateTokenDialog from "@/components/blocks/create-token-dialog";
-import { useRouter } from "next/navigation";
 import { useReadContract } from "wagmi";
 import { contract_abi } from "@/abi/TokenFactoryAbi";
 import { flowTestnet } from "viem/chains";
-import ProjectCarc from "@/components/blocks/project-card";
+import ProjectCard from "@/components/blocks/project-card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { X } from "lucide-react";
 
 export default function MainPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -28,222 +21,85 @@ export default function MainPage() {
     functionName: "getAllMemeTokens",
   });
 
-  const isSearch = (token: any) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      token.name.toLowerCase().includes(query) ||
-      token.symbol.toLowerCase().includes(query) ||
-      token.creatorAddress.toLowerCase().includes(query) ||
-      token.tokenAddress.toLowerCase().includes(query) ||
-      token.description.toLowerCase().includes(query)
-    );
-  };
+  const isSearch = useCallback(
+    (token: any) => {
+      const query = searchQuery.toLowerCase();
+      return (
+        token.name.toLowerCase().includes(query) ||
+        token.symbol.toLowerCase().includes(query) ||
+        token.creatorAddress.toLowerCase().includes(query) ||
+        token.tokenAddress.toLowerCase().includes(query) ||
+        token.description.toLowerCase().includes(query)
+      );
+    },
+    [searchQuery]
+  );
 
   const tokensArray = Array.isArray(tokens) ? tokens : [];
   const filteredTokens = tokensArray.filter(isSearch);
 
+  const clearSearch = () => setSearchQuery("");
+
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 p-2 font-mono text-xs">
-      <style jsx global>{`
-        @keyframes blink {
-          0%,
-          100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0;
-          }
-        }
-        @keyframes slide {
-          0% {
-            transform: translateX(100%);
-          }
-          100% {
-            transform: translateX(-100%);
-          }
-        }
-        @keyframes pixelate {
-          0% {
-            filter: blur(0px);
-          }
-          50% {
-            filter: blur(1px);
-          }
-          100% {
-            filter: blur(0px);
-          }
-        }
-      `}</style>
-      <style jsx global>{`
-        @keyframes blink {
-          0%,
-          100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0;
-          }
-        }
-        @keyframes slide {
-          0% {
-            transform: translateX(100%);
-          }
-          100% {
-            transform: translateX(-100%);
-          }
-        }
-        @keyframes pixelate {
-          0% {
-            filter: blur(0px);
-          }
-          50% {
-            filter: blur(1px);
-          }
-          100% {
-            filter: blur(0px);
-          }
-        }
-        @keyframes pulse {
-          0%,
-          100% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.05);
-          }
-        }
-        @keyframes rainbow {
-          0% {
-            background-color: #ff0000;
-          }
-          14% {
-            background-color: #ff7f00;
-          }
-          28% {
-            background-color: #ffff00;
-          }
-          42% {
-            background-color: #00ff00;
-          }
-          57% {
-            background-color: #0000ff;
-          }
-          71% {
-            background-color: #8b00ff;
-          }
-          85% {
-            background-color: #ff00ff;
-          }
-          100% {
-            background-color: #ff0000;
-          }
-        }
-      `}</style>
-
-      <main className="space-y-4">
-        <div className="text-center relative">
-          <h2 className="text-2xl font-bold text-yellow-400 mb-2 animate-[pixelate_2s_ease-in-out_infinite]">
-            king of the hill
-          </h2>
-          <CreateTokenDialog />
-
-          <Card className="max-w-xs mx-auto mt-2 bg-gray-800 border border-green-500">
-            <CardContent className="flex items-center space-x-2 p-2">
-              <Avatar className="w-8 h-8">
-                <AvatarImage
-                  src="/placeholder.svg?height=32&width=32"
-                  alt="Doggo"
-                />
-                <AvatarFallback>D</AvatarFallback>
-              </Avatar>
-              <div className="text-[10px]">
-                <p className="text-green-400">Created by 2FARar 47m ago</p>
-                <p>
-                  market cap: 29.67K{" "}
-                  <Badge
-                    variant="outline"
-                    className="ml-1 bg-green-900 text-green-300 text-[8px]"
-                  >
-                    🚀
-                  </Badge>
-                </p>
-                <p>replies: 34</p>
-                <p className="font-bold text-yellow-300">
-                  Doggo Real Name [ticker: Rocket]
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="flex justify-center">
-          <Input
-            className="max-w-xs w-full mr-1 h-6 text-[10px] bg-gray-800 border-green-500 text-green-300 placeholder-green-600"
-            placeholder="search for token, address, creator, or description"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <Button
-            disabled
-            className="h-6 px-2 bg-green-600 hover:bg-green-700 text-black font-bold text-[10px]"
-          >
-            search
-          </Button>
-        </div>
-
-        <div className="flex justify-between items-center">
-          <div className="flex space-x-2">
-            <Button
-              variant="ghost"
-              className="h-6 px-2 text-[10px] text-green-400 hover:bg-green-900"
-            >
-              Following
-            </Button>
-            <Button
-              variant="ghost"
-              className="h-6 px-2 text-[10px] text-green-400 border-b border-green-400 hover:bg-green-900"
-            >
-              Terminal
-            </Button>
-          </div>
-          <Select>
-            <SelectTrigger className="w-24 h-6 text-[10px] bg-gray-800 border-green-500 text-green-300">
-              <SelectValue placeholder="sort: featured" />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-green-500 text-[10px]">
-              <SelectItem value="featured">featured</SelectItem>
-              <SelectItem value="recent">recent</SelectItem>
-              <SelectItem value="popular">popular</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Card className="bg-gray-800 border border-blue-500">
-          <CardContent className="p-2 text-[10px]">
-            <p className="text-blue-300">
-              The Featured tab shows coins based on several factors, including
-              current trends, strong holder base, and similarities to coins you
-              have engaged with in the past.
+    <div className="flex flex-col md:flex-row md:h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4 font-mono text-xs">
+      {/* Left side - Create Coin Form */}
+      <div className="w-full md:w-2/3 pr-0 md:pr-4 mb-4 md:mb-0 md:overflow-y-auto">
+        <h2 className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mb-4 animate-[pixelate_2s_ease-in-out_infinite]">
+          Launch Your Crypto Rocket 🚀
+        </h2>
+        <Card className="bg-white dark:bg-gray-800 border border-yellow-300 dark:border-yellow-500 mb-4">
+          <CardContent className="p-4 text-[10px]">
+            <p className="text-yellow-600 dark:text-yellow-300 font-bold mb-2">
+              🛡️ Rug-Proof Zone 🛡️
             </p>
-            <Button
-              variant="outline"
-              className="mt-1 h-6 px-2 text-[10px] border-blue-500 text-blue-300 hover:bg-blue-900"
-            >
-              got it
-            </Button>
+            <p className="text-blue-600 dark:text-blue-300">
+              Our crypto launchpad is like a shield against rug pulls! Every
+              token here is a fair-launch gem, with no sneaky presales or team
+              allocations. It's the Fort Knox of meme coins! 🏰💎
+            </p>
           </CardContent>
         </Card>
+        <CreateTokenDialog />
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pb-28">
-          {Array.isArray(filteredTokens) && filteredTokens.length > 0 ? (
-            filteredTokens.map((token: any, index: number) => (
-              <ProjectCarc key={index} index={index} token={token} />
-            ))
-          ) : (
-            <p className="text-center text-gray-400">No tokens found</p>
-          )}
+      {/* Right side - Token Cards */}
+      <div className="w-full md:w-1/3 pl-0 md:pl-4">
+        <div className="bg-gray-100 dark:bg-gray-900 z-10 pb-2 sticky top-0">
+          <div className="relative w-full mb-4">
+            <Input
+              className="w-full h-8 text-[10px] bg-white dark:bg-gray-800 border-green-300 dark:border-green-500 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 pr-8"
+              placeholder="Search tokens..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <Button
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                onClick={clearSearch}
+                variant="ghost"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
-      </main>
+        <ScrollArea className="md:h-[calc(100vh-8rem)] pr-2">
+          <div className="space-y-4 pb-4">
+            {Array.isArray(filteredTokens) && filteredTokens.length > 0 ? (
+              filteredTokens
+                .slice()
+                .reverse()
+                .map((token: any, index: number) => (
+                  <ProjectCard key={token.symbol} index={index} token={token} />
+                ))
+            ) : (
+              <p className="text-center text-gray-600 dark:text-gray-400">
+                No tokens found
+              </p>
+            )}
+          </div>
+        </ScrollArea>
+      </div>
     </div>
   );
 }

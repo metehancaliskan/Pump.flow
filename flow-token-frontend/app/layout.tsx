@@ -36,10 +36,9 @@ export default function RootLayout({
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
-            forcedTheme="dark"
             enableSystem={false}
           >
-            <div className="bg-gray-900">
+            <div className="">
               <Header />
               {children}
             </div>

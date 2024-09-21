@@ -10,9 +10,15 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Bitcoin, Zap, Rocket, Star } from "lucide-react";
 
-export default function HowItWorksModal() {
+interface HowItWorksModalProps {
+  onOpenChange?: (open: boolean) => void;
+}
+
+export default function HowItWorksModal({
+  onOpenChange,
+}: HowItWorksModalProps) {
   return (
-    <Dialog>
+    <Dialog onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button
           variant="outline"

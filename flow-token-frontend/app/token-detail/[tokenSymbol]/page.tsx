@@ -16,9 +16,11 @@ import {
 } from "@/components/ui/table";
 import { ArrowLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useReadContract } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import { contract_abi } from "@/abi/TokenFactoryAbi";
 import { flowTestnet } from "viem/chains";
+import { createClient } from "@/utils/supabase/client";
+import { useModal } from "connectkit";
 
 export default function TokenDetail() {
   const [pageToken, setPageToken] = useState<any>();
@@ -31,22 +33,67 @@ export default function TokenDetail() {
   const params = useParams();
   const tokenSymbol = params.tokenSymbol;
   const router = useRouter();
+  const supabase = createClient();
+  const { address } = useAccount();
+  const { setOpen } = useModal();
+  const [comments, setComments] = useState<any[]>([]);
+  const [comment, setComment] = useState("");
 
   useEffect(() => {
-    console.log(pageToken);
     if (tokens) {
-      console.log(tokens);
-      console.log(tokenSymbol);
       const token =
         Array.isArray(tokens) &&
         tokens.find((token: any) => token.symbol === tokenSymbol);
-
       setPageToken(token);
     }
-    console.log(pageToken);
+
+    if (pageToken && pageToken.tokenAddress) {
+      const fetchComments = async () => {
+        let { data: Comments, error } = await supabase
+          .from("Comments")
+          .select("*")
+          .eq("token", pageToken.tokenAddress)
+          .order('created_at', { ascending: false });;
+
+          
+
+        if (error || !Comments) {
+          console.error("Error fetching comments:", error);
+        } else {
+          setComments(Comments);
+        }
+      };
+
+      fetchComments();
+    }
   }, [tokenSymbol, tokens, pageToken]);
+
+  const handleCommentSubmit = async () => {
+    if (!pageToken || !pageToken.tokenAddress || !address) {
+      !address && setOpen(true);
+      return;
+    }
+
+    const commentDoc = {
+      comment_type: "token",
+      comment: comment,
+      token: pageToken.tokenAddress,
+      created_by: address,
+    };
+    const { data: created_comment, error } = await supabase
+      .from("Comments")
+      .insert(commentDoc)
+      .select()
+      .single();
+
+    if (created_comment) {
+      setComments((prevComments) => [...prevComments, created_comment]);
+      setComment("");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 p-2 font-mono text-xs">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-2 font-mono text-xs">
       <style jsx global>{`
         @keyframes blink {
           0%,
@@ -71,16 +118,16 @@ export default function TokenDetail() {
         onClick={() => router.back()}
         variant="outline"
         size="sm"
-        className="mb-4 h-6 px-2 border-green-500 text-green-500 hover:bg-green-500 hover:text-black flex items-center"
+        className="mb-4 h-6 px-2 border-green-500 text-green-500 hover:bg-green-500 hover:text-black dark:border-green-400 dark:text-green-400 dark:hover:bg-green-400 dark:hover:text-black flex items-center"
       >
         <ArrowLeft className="mr-1 h-3 w-3" />
         go back
       </Button>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="bg-gray-800 border border-green-500">
+        <Card className="bg-white dark:bg-gray-800 border border-green-300 dark:border-green-500">
           <CardHeader>
-            <CardTitle className="text-lg text-green-400">
+            <CardTitle className="text-lg text-green-600 dark:text-green-400">
               Token Detail for {pageToken?.name}
             </CardTitle>
           </CardHeader>
@@ -88,77 +135,91 @@ export default function TokenDetail() {
             <Avatar className="w-32 h-32 mx-auto">
               <AvatarImage
                 src={pageToken?.tokenImageUrl}
-                alt="Spongebob Token"
+                alt={pageToken?.name}
               />
               <AvatarFallback>{pageToken?.symbol}</AvatarFallback>
             </Avatar>
             <div className="text-[11px] space-y-2">
               <p className="flex justify-between">
-                <span className="text-green-400 font-bold">
+                <span className="text-green-600 dark:text-green-400 font-bold">
                   Creator Address:
                 </span>
-                <span className="text-gray-300 break-all">
+                <span className="text-gray-700 dark:text-gray-300 break-all">
                   {pageToken?.creatorAddress}
                 </span>
               </p>
               <p className="flex justify-between">
-                <span className="text-green-400 font-bold">Token Address:</span>
-                <span className="text-gray-300 break-all">
+                <span className="text-green-600 dark:text-green-400 font-bold">
+                  Token Address:
+                </span>
+                <span className="text-gray-700 dark:text-gray-300 break-all">
                   {pageToken?.tokenAddress}
                 </span>
               </p>
               <p className="flex justify-between">
-                <span className="text-green-400 font-bold">
+                <span className="text-green-600 dark:text-green-400 font-bold">
                   Funding Raised:
                 </span>
-                <span className="text-gray-300">
+                <span className="text-gray-700 dark:text-gray-300">
                   {Number(pageToken?.fundingRaised)}
                 </span>
               </p>
               <p className="flex justify-between">
-                <span className="text-green-400 font-bold">Token Symbol:</span>
-                <span className="text-gray-300">SPONGE</span>
+                <span className="text-green-600 dark:text-green-400 font-bold">
+                  Token Symbol:
+                </span>
+                <span className="text-gray-700 dark:text-gray-300">
+                  {pageToken?.symbol}
+                </span>
               </p>
               <p className="flex flex-col">
-                <span className="text-green-400 font-bold">Description:</span>
-                <span className="text-gray-300 mt-1">
-                  This is a spongebob token
+                <span className="text-green-600 dark:text-green-400 font-bold">
+                  Description:
+                </span>
+                <span className="text-gray-700 dark:text-gray-300 mt-1">
+                  {pageToken?.description}
                 </span>
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gray-800 border border-blue-500">
+        <Card className="bg-white dark:bg-gray-800 border border-blue-300 dark:border-blue-500">
           <CardHeader>
-            <CardTitle className="text-lg text-blue-400">
+            <CardTitle className="text-lg text-blue-600 dark:text-blue-400">
               Bonding Curve Progress: 0 / 24 FLOW
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Progress value={0} max={24} className="h-2 bg-blue-900" />
-            <p className="text-[10px] text-blue-300">
+            <Progress
+              value={0}
+              max={24}
+              className="h-2 bg-blue-200 dark:bg-blue-900"
+            />
+            <p className="text-[10px] text-blue-600 dark:text-blue-300">
               When the market cap reaches 24 FLOW, all the liquidity from the
               bonding curve will be deposited into Uniswap, and the LP tokens
               will be burned. Progression increases as the price goes up.
             </p>
             <div className="mt-4">
-              <p className="text-blue-400 mb-1">
+              <p className="text-blue-600 dark:text-blue-400 mb-1">
                 Remaining Tokens Available for Sale: 800000 / 800,000
               </p>
               <Progress
                 value={800000}
                 max={800000}
-                className="h-2 bg-blue-500"
+                className="h-2 bg-blue-400 dark:bg-blue-500"
               />
             </div>
             <div className="mt-4">
-              <h3 className="text-blue-400 mb-2">Buy Tokens</h3>
+              <h3 className="text-blue-600 dark:text-blue-400 mb-2">
+                Buy Tokens
+              </h3>
               <Input
                 placeholder="Enter amount of tokens to buy"
-                className="mb-2 h-6 text-[10px] bg-gray-700 border-blue-500 text-blue-300 placeholder-blue-600"
+                className="mb-2 h-6 text-[10px] bg-gray-100 dark:bg-gray-700 border-blue-300 dark:border-blue-500 text-blue-600 dark:text-blue-300 placeholder-blue-400 dark:placeholder-blue-600"
               />
-              <Button className="w-full h-6 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px]">
+              <Button className="w-full h-6 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-bold text-[10px]">
                 Purchase
               </Button>
             </div>
@@ -166,41 +227,112 @@ export default function TokenDetail() {
         </Card>
       </div>
 
-      <Card className="mt-4 bg-gray-800 border border-purple-500">
+      <Card className="mt-4 bg-white dark:bg-gray-800 border border-purple-300 dark:border-purple-500">
         <CardHeader>
-          <CardTitle className="text-lg text-purple-400">Owners</CardTitle>
+          <CardTitle className="text-lg text-purple-600 dark:text-purple-400">
+            Owners
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-purple-300">Owner Address</TableHead>
-                <TableHead className="text-purple-300">
+                <TableHead className="text-purple-600 dark:text-purple-300">
+                  Owner Address
+                </TableHead>
+                <TableHead className="text-purple-600 dark:text-purple-300">
                   Percentage of Total Supply
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <TableRow>
-                <TableCell className="text-[10px]">
+                <TableCell className="text-[10px] text-gray-700 dark:text-gray-300">
                   {pageToken?.creatorAddress}
                 </TableCell>
-                <TableCell className="text-[10px]">100%</TableCell>
+                <TableCell className="text-[10px] text-gray-700 dark:text-gray-300">
+                  100%
+                </TableCell>
               </TableRow>
             </TableBody>
           </Table>
         </CardContent>
       </Card>
 
-      <div className="mt-4 overflow-hidden">
-        <Badge
-          variant="secondary"
-          className="bg-yellow-400 text-black px-1 py-0.5 text-[8px] whitespace-nowrap animate-[slide_20s_linear_infinite]"
-        >
-          SPONGE price: 0.00042 FLOW • 24h volume: 1.5 FLOW • Market cap: 336
-          FLOW • Holders: 150 • Transactions: 1,234
-        </Badge>
-      </div>
+      <Card className="mt-4 bg-white dark:bg-gray-800 border border-yellow-300 dark:border-yellow-500">
+        <CardHeader>
+          <CardTitle className="text-lg text-yellow-600 dark:text-yellow-400">
+            Add a Comment
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <textarea
+              className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700 border-yellow-300 dark:border-yellow-500 text-yellow-600 dark:text-yellow-300 placeholder-yellow-400 dark:placeholder-yellow-600 text-[10px]"
+              placeholder="Write your comment here..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={4}
+            />
+            <Button
+              className="w-full h-6 bg-yellow-500 hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700 text-black dark:text-white font-bold text-[10px]"
+              onClick={handleCommentSubmit}
+            >
+              Submit Comment
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-4 bg-white dark:bg-gray-800 border border-red-300 dark:border-red-500">
+        <CardHeader>
+          <CardTitle className="text-lg text-red-600 dark:text-red-400">
+            Comments
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {comments.length > 0 ? (
+            <ul className="space-y-4">
+              {comments.map((comment, index) => (
+                <li
+                  key={index}
+                  className={`p-3 rounded-lg ${
+                    index % 2 === 0
+                      ? "bg-red-50 dark:bg-red-900/20"
+                      : "bg-white dark:bg-gray-800"
+                  }`}
+                >
+                  <div className="flex items-start space-x-3">
+                    <Avatar className="w-8 h-8 bg-red-200 dark:bg-red-700">
+                      <AvatarFallback className="text-red-700 dark:text-red-200">
+                        {comment.created_by.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-[11px] text-gray-800 dark:text-gray-200">
+                        {comment.comment}
+                      </p>
+                      <div className="flex justify-between items-center text-[9px]">
+                        <span className="text-red-600 dark:text-red-400">
+                          {comment.created_by.slice(0, 6)}...
+                          {comment.created_by.slice(-4)}
+                        </span>
+                        <span className="text-gray-500 dark:text-gray-400">
+                          {new Date(comment.created_at).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-[11px] text-red-600 dark:text-red-300">
+              No comments yet.
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
