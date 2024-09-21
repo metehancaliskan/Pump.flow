@@ -6,7 +6,7 @@ import { ConnectKitProvider, getDefaultConfig } from "connectkit";
 import { ReactNode } from "react";
 import { injected } from "@wagmi/connectors";
 
-const config = createConfig(
+export const config = createConfig(
   getDefaultConfig({
     connectors: [injected()],
     transports: {

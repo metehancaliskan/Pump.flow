@@ -5,14 +5,18 @@ import { MessageCircle, Wallet } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { useAccount } from "wagmi";
 import { ConnectKitButton } from "connectkit";
+import { useRouter } from "next/navigation";
+import HowItWorksModal from "./how-it-works-dialog";
 
 type Props = {};
 
 const Header = (props: Props) => {
+  const router = useRouter();
   return (
     <header className="flex justify-between items-center mb-4 text-[10px]">
       <div className="flex space-x-2">
         <Button
+          onClick={() => router.push("https://x.com/flow_blockchain")}
           variant="outline"
           size="sm"
           className="h-6 px-2 border-green-500 text-green-500 hover:bg-green-500 hover:text-black"
@@ -20,21 +24,15 @@ const Header = (props: Props) => {
           <MessageCircle className="mr-1 h-3 w-3" />
           twitter
         </Button>
-        <Button
+        {/* <Button
           variant="outline"
           size="sm"
           className="h-6 px-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-black"
         >
           <MessageCircle className="mr-1 h-3 w-3" />
           telegram
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-6 px-2 border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-black"
-        >
-          how it works
-        </Button>
+        </Button> */}
+        <HowItWorksModal />
       </div>
       <div className="flex space-x-2 overflow-hidden">
         <Badge
