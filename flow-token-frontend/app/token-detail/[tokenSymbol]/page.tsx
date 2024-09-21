@@ -1,19 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
 import { ArrowLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useAccount, useReadContract } from "wagmi";
@@ -21,6 +12,7 @@ import { contract_abi } from "@/abi/TokenFactoryAbi";
 import { flowTestnet } from "viem/chains";
 import { createClient } from "@/utils/supabase/client";
 import { useModal } from "connectkit";
+import TokenTrade from "@/components/blocks/token-trade";
 
 export default function TokenDetail() {
   const [pageToken, setPageToken] = useState<any>();
@@ -38,6 +30,23 @@ export default function TokenDetail() {
   const { setOpen } = useModal();
   const [comments, setComments] = useState<any[]>([]);
   const [comment, setComment] = useState("");
+  const { data: totalSupply } = useReadContract<any, any, Array<any>>({
+    abi: contract_abi,
+    address: process.env.NEXT_PUBLIC_TOKEN_FACTORY_ADDRESS! as `0x${string}`,
+    chainId: flowTestnet.id,
+    functionName: "getTotalSupply",
+    args: [pageToken?.tokenAddress],
+  });
+
+  const { data: remainingSupply } = useReadContract<any, any, Array<any>>({
+    abi: contract_abi,
+    address: process.env.NEXT_PUBLIC_TOKEN_FACTORY_ADDRESS! as `0x${string}`,
+    chainId: flowTestnet.id,
+    functionName: "getRemainingSupply",
+    args: [pageToken?.tokenAddress],
+  });
+
+  console.log(pageToken);
 
   useEffect(() => {
     if (tokens) {
@@ -53,9 +62,7 @@ export default function TokenDetail() {
           .from("Comments")
           .select("*")
           .eq("token", pageToken.tokenAddress)
-          .order('created_at', { ascending: false });;
-
-          
+          .order("created_at", { ascending: false });
 
         if (error || !Comments) {
           console.error("Error fetching comments:", error);
@@ -87,7 +94,7 @@ export default function TokenDetail() {
       .single();
 
     if (created_comment) {
-      setComments((prevComments) => [...prevComments, created_comment]);
+      setComments((prevComments) => [created_comment, ...prevComments]);
       setComment("");
     }
   };
@@ -187,77 +194,44 @@ export default function TokenDetail() {
         <Card className="bg-white dark:bg-gray-800 border border-blue-300 dark:border-blue-500">
           <CardHeader>
             <CardTitle className="text-lg text-blue-600 dark:text-blue-400">
-              Bonding Curve Progress: 0 / 24 FLOW
+              Bonding Curve Progress:{" "}
+              {Math.max(0, Number(totalSupply) / 10 ** 18 - 200000).toFixed(2)}{" "}
+              / 800000 {pageToken?.symbol}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <Progress
-              value={0}
-              max={24}
-              className="h-2 bg-blue-200 dark:bg-blue-900"
+              value={
+                ((Math.max(0, Number(totalSupply) / 10 ** 18) - 200000) /
+                  800000) *
+                100
+              }
+              className="h-2"
             />
             <p className="text-[10px] text-blue-600 dark:text-blue-300">
-              When the market cap reaches 24 FLOW, all the liquidity from the
-              bonding curve will be deposited into Uniswap, and the LP tokens
-              will be burned. Progression increases as the price goes up.
+              When the market cap reaches all the liquidity from the bonding
+              curve will be deposited into Uniswap, and the LP tokens will be
+              burned. Progression increases as the price goes up.
             </p>
             <div className="mt-4">
               <p className="text-blue-600 dark:text-blue-400 mb-1">
-                Remaining Tokens Available for Sale: 800000 / 800,000
+                Remaining Tokens Available for Sale:{" "}
+                {Math.max(0, Number(remainingSupply) / 10 ** 18).toFixed(0)}
               </p>
               <Progress
-                value={800000}
-                max={800000}
+                value={
+                  (Math.max(0, Number(remainingSupply) / 10 ** 18) / 800000) *
+                  100
+                }
                 className="h-2 bg-blue-400 dark:bg-blue-500"
               />
             </div>
             <div className="mt-4">
-              <h3 className="text-blue-600 dark:text-blue-400 mb-2">
-                Buy Tokens
-              </h3>
-              <Input
-                placeholder="Enter amount of tokens to buy"
-                className="mb-2 h-6 text-[10px] bg-gray-100 dark:bg-gray-700 border-blue-300 dark:border-blue-500 text-blue-600 dark:text-blue-300 placeholder-blue-400 dark:placeholder-blue-600"
-              />
-              <Button className="w-full h-6 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-bold text-[10px]">
-                Purchase
-              </Button>
+              <TokenTrade token={pageToken} totalSupply={Number(totalSupply)} />
             </div>
           </CardContent>
         </Card>
       </div>
-
-      <Card className="mt-4 bg-white dark:bg-gray-800 border border-purple-300 dark:border-purple-500">
-        <CardHeader>
-          <CardTitle className="text-lg text-purple-600 dark:text-purple-400">
-            Owners
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-purple-600 dark:text-purple-300">
-                  Owner Address
-                </TableHead>
-                <TableHead className="text-purple-600 dark:text-purple-300">
-                  Percentage of Total Supply
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell className="text-[10px] text-gray-700 dark:text-gray-300">
-                  {pageToken?.creatorAddress}
-                </TableCell>
-                <TableCell className="text-[10px] text-gray-700 dark:text-gray-300">
-                  100%
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
 
       <Card className="mt-4 bg-white dark:bg-gray-800 border border-yellow-300 dark:border-yellow-500">
         <CardHeader>

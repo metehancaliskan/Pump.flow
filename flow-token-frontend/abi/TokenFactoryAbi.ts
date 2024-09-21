@@ -1,7 +1,18 @@
 export const contract_abi = [
   {
-    inputs: [],
-    name: "INITIAL_PRICE",
+    inputs: [
+      {
+        internalType: "address",
+        name: "memeTokenAddress",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "tokenQty",
+        type: "uint256",
+      },
+    ],
+    name: "buyMemeToken",
     outputs: [
       {
         internalType: "uint256",
@@ -9,21 +20,71 @@ export const contract_abi = [
         type: "uint256",
       },
     ],
-    stateMutability: "view",
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
+      {
+        internalType: "string",
+        name: "symbol",
+        type: "string",
+      },
+      {
+        internalType: "string",
+        name: "imageUrl",
+        type: "string",
+      },
+      {
+        internalType: "string",
+        name: "description",
+        type: "string",
+      },
+    ],
+    name: "createMemeToken",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "memeTokenAddress",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "tokenQty",
+        type: "uint256",
+      },
+    ],
+    name: "sellMemeToken",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
     inputs: [],
-    name: "K",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
+    stateMutability: "nonpayable",
+    type: "constructor",
   },
   {
     inputs: [
@@ -77,30 +138,6 @@ export const contract_abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "memeTokenAddress",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "tokenQty",
-        type: "uint256",
-      },
-    ],
-    name: "buyMemeToken",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "uint256",
         name: "currentSupply",
         type: "uint256",
@@ -125,35 +162,25 @@ export const contract_abi = [
   {
     inputs: [
       {
-        internalType: "string",
-        name: "name",
-        type: "string",
+        internalType: "uint256",
+        name: "currentSupply",
+        type: "uint256",
       },
       {
-        internalType: "string",
-        name: "symbol",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "imageUrl",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "description",
-        type: "string",
+        internalType: "uint256",
+        name: "tokensToSell",
+        type: "uint256",
       },
     ],
-    name: "createMemeToken",
+    name: "calculateRefund",
     outputs: [
       {
-        internalType: "address",
+        internalType: "uint256",
         name: "",
-        type: "address",
+        type: "uint256",
       },
     ],
-    stateMutability: "payable",
+    stateMutability: "pure",
     type: "function",
   },
   {
@@ -209,12 +236,108 @@ export const contract_abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "memeTokenAddress",
+        type: "address",
+      },
+    ],
+    name: "getMarketCap",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "memeTokenAddress",
+        type: "address",
+      },
+    ],
+    name: "getRemainingSupply",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "memeTokenAddress",
+        type: "address",
+      },
+    ],
+    name: "getTotalSupply",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "INITIAL_PRICE",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "K",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "uint256",
         name: "",
         type: "uint256",
       },
     ],
     name: "memeTokenAddresses",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "owner",
     outputs: [
       {
         internalType: "address",
