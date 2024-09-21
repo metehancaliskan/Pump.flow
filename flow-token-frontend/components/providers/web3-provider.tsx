@@ -16,7 +16,7 @@ export const config = createConfig(
       }),
     ],
     transports: {
-      [flowTestnet.id]: http(),
+      [flowTestnet.id]: http("https://flow-testnet.g.alchemy.com/v2/JzDENQ87lCifK907U4Fnf0g9jXp3OeUf"),
     },
     // Your dApps chains
     chains: [flowTestnet],
