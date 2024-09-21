@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -19,12 +19,11 @@ import { createClient } from "@/utils/supabase/client";
 import { useAccount, useWriteContract } from "wagmi";
 import { writeContract } from "viem/actions";
 import { contract_abi } from "@/abi/TokenFactoryAbi";
-import { useEffect } from "react";
 import { flowTestnet } from "viem/chains";
 import { useModal } from "connectkit";
-import { create } from "domain";
 import { v4 as uuidv4 } from "uuid";
 import { parseEther } from "viem";
+import Image from "next/image";
 
 type FormData = {
   name: string;
@@ -45,20 +44,11 @@ export default function CreateTokenDialog() {
     isPending,
   } = useWriteContract();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { setOpen } = useModal();
   const [isOpen, setIsOpen] = useState(false);
   const { address, isConnected, isDisconnected } = useAccount();
   const [fileName, setFileName] = useState("No file chosen");
-
-  const [tokenInformation, setTokenInformation] = useState({
-    name: "",
-    ticker: "",
-    description: "",
-    imageUrl: "",
-    twitterUsername: "",
-    telegramUsername: "",
-    website: "",
-  });
 
   const {
     register,
@@ -70,7 +60,6 @@ export default function CreateTokenDialog() {
   const createCoin = async (data: FormData) => {
     const supabase = createClient();
 
-    // Use the selectedFile state instead of data.image
     if (!selectedFile) {
       throw new Error("No file selected");
     }
@@ -95,8 +84,6 @@ export default function CreateTokenDialog() {
       args: [data.name, data.ticker, imageUrl, data.description],
     });
 
-    console.log(data);
-
     const { data: created_token, error } = await supabase
       .from("Tokens")
       .insert({
@@ -110,7 +97,11 @@ export default function CreateTokenDialog() {
         website: data.website,
       });
 
-    console.log(error);
+    if (error) {
+      console.error("Database insertion error:", error);
+    }
+
+    return created_token;
   };
 
   useEffect(() => {
@@ -122,8 +113,10 @@ export default function CreateTokenDialog() {
       alert("Token created successfully");
       setIsOpen(false);
       reset();
+      setSelectedFile(null);
+      setPreviewUrl(null);
     }
-  }, [hash]);
+  }, [hash, variables, status, reset]);
 
   const mutation = useMutation({
     mutationFn: createCoin,
@@ -139,6 +132,23 @@ export default function CreateTokenDialog() {
     mutation.mutate(data);
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setFileName(file.name);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setSelectedFile(null);
+      setFileName("No file chosen");
+      setPreviewUrl(null);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -146,7 +156,6 @@ export default function CreateTokenDialog() {
           className="px-4 py-2 rounded-md bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold text-sm hover:from-purple-700 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl animate-[blink_1s_ease-in-out_infinite]"
           onClick={() => {
             if (!isConnected) {
-              console.log("first");
               setOpen(true);
               return;
             }
@@ -218,24 +227,28 @@ export default function CreateTokenDialog() {
               <Label htmlFor="image" className="text-green-400 text-[10px]">
                 image
               </Label>
-              <div className="flex">
+              <div className="flex flex-col items-center">
                 <Input
                   id="image"
                   type="file"
+                  accept="image/*"
                   {...register("image", {
                     required: "Required",
-                    onChange: (e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setSelectedFile(file);
-                        setFileName(file.name);
-                      } else {
-                        setSelectedFile(null);
-                        setFileName("No file chosen");
-                      }
-                    },
+                    onChange: handleFileChange,
                   })}
+                  className="h-5 text-[10px] bg-gray-800 border-gray-700 text-white"
                 />
+                {previewUrl && (
+                  <div className="mt-2 relative w-32 h-32">
+                    <Image
+                      src={previewUrl}
+                      alt="Preview"
+                      fill
+                      style={{ objectFit: "cover" }}
+                      className="rounded-md"
+                    />
+                  </div>
+                )}
               </div>
               {errors.image && (
                 <span className="text-red-500 text-[8px]">

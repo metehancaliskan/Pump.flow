@@ -16,7 +16,7 @@ const Header = (props: Props) => {
     <header className="flex justify-between items-center mb-4 text-[10px]">
       <div className="flex space-x-2">
         <Button
-          onClick={() => router.push("https://x.com/flow_blockchain")}
+          onClick={()  => window.open("https://x.com/flow_blockchain", "_blank")}
           variant="outline"
           size="sm"
           className="h-6 px-2 border-green-500 text-green-500 hover:bg-green-500 hover:text-black"

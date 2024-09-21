@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,10 +15,36 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useReadContract } from "wagmi";
+import { contract_abi } from "@/abi/TokenFactoryAbi";
+import { flowTestnet } from "viem/chains";
 
 export default function TokenDetail() {
+  const [pageToken, setPageToken] = useState<any>();
+  const { data: tokens } = useReadContract<any, any, Array<any>>({
+    abi: contract_abi,
+    address: process.env.NEXT_PUBLIC_TOKEN_FACTORY_ADDRESS! as `0x${string}`,
+    chainId: flowTestnet.id,
+    functionName: "getAllMemeTokens",
+  });
+  const params = useParams();
+  const tokenSymbol = params.tokenSymbol;
   const router = useRouter();
+
+  useEffect(() => {
+    console.log(pageToken);
+    if (tokens) {
+      console.log(tokens);
+      console.log(tokenSymbol);
+      const token =
+        Array.isArray(tokens) &&
+        tokens.find((token: any) => token.symbol === tokenSymbol);
+
+      setPageToken(token);
+    }
+    console.log(pageToken);
+  }, [tokenSymbol, tokens, pageToken]);
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-2 font-mono text-xs">
       <style jsx global>{`
@@ -55,16 +81,16 @@ export default function TokenDetail() {
         <Card className="bg-gray-800 border border-green-500">
           <CardHeader>
             <CardTitle className="text-lg text-green-400">
-              Token Detail for Spongebob Token
+              Token Detail for {pageToken?.name}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <Avatar className="w-32 h-32 mx-auto">
               <AvatarImage
-                src="/placeholder.svg?height=128&width=128"
+                src={pageToken?.tokenImageUrl}
                 alt="Spongebob Token"
               />
-              <AvatarFallback>ST</AvatarFallback>
+              <AvatarFallback>{pageToken?.symbol}</AvatarFallback>
             </Avatar>
             <div className="text-[11px] space-y-2">
               <p className="flex justify-between">
@@ -72,20 +98,22 @@ export default function TokenDetail() {
                   Creator Address:
                 </span>
                 <span className="text-gray-300 break-all">
-                  0x3b5AFc8d00Cef12B65ab651C6317A6F41D92f85e
+                  {pageToken?.creatorAddress}
                 </span>
               </p>
               <p className="flex justify-between">
                 <span className="text-green-400 font-bold">Token Address:</span>
                 <span className="text-gray-300 break-all">
-                  0xc26a55E9cd1D1Db63D8d09Dacc635247Cfa27580
+                  {pageToken?.tokenAddress}
                 </span>
               </p>
               <p className="flex justify-between">
                 <span className="text-green-400 font-bold">
                   Funding Raised:
                 </span>
-                <span className="text-gray-300">0.0</span>
+                <span className="text-gray-300">
+                  {Number(pageToken?.fundingRaised)}
+                </span>
               </p>
               <p className="flex justify-between">
                 <span className="text-green-400 font-bold">Token Symbol:</span>
@@ -155,7 +183,7 @@ export default function TokenDetail() {
             <TableBody>
               <TableRow>
                 <TableCell className="text-[10px]">
-                  0x41e223450b7f2a919a71df352c8dd79da3c25ba5
+                  {pageToken?.creatorAddress}
                 </TableCell>
                 <TableCell className="text-[10px]">100%</TableCell>
               </TableRow>
@@ -169,8 +197,8 @@ export default function TokenDetail() {
           variant="secondary"
           className="bg-yellow-400 text-black px-1 py-0.5 text-[8px] whitespace-nowrap animate-[slide_20s_linear_infinite]"
         >
-          SPONGE price: 0.00042 FLOW • 24h volume: 1.5 FLOW • Market cap: 336 FLOW
-          • Holders: 150 • Transactions: 1,234
+          SPONGE price: 0.00042 FLOW • 24h volume: 1.5 FLOW • Market cap: 336
+          FLOW • Holders: 150 • Transactions: 1,234
         </Badge>
       </div>
     </div>
