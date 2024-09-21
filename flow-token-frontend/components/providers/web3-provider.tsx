@@ -4,11 +4,17 @@ import { flowTestnet } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
 import { ReactNode } from "react";
-import { injected } from "@wagmi/connectors";
+import { injected, walletConnect } from "@wagmi/connectors";
 
 export const config = createConfig(
   getDefaultConfig({
-    connectors: [injected()],
+    connectors: [
+      injected(),
+      walletConnect({
+        showQrModal: false,
+        projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
+      }),
+    ],
     transports: {
       [flowTestnet.id]: http(),
     },
@@ -19,10 +25,10 @@ export const config = createConfig(
     walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
 
     // Required App Info
-    appName: "Your App Name",
+    appName: "Pump Flow",
 
     // Optional App Info
-    appDescription: "Meme coin gen",
+    appDescription: "Pump Flow meme coin gen",
   })
 );
 
