@@ -81,6 +81,23 @@ contract TokenFactory is ReentrancyGuard {
         return memeTokenAddress;
     }
 
+
+    function getTotalSupply(address memeTokenAddress) public view returns (uint256) {
+        Token memeTokenCt = Token(memeTokenAddress);
+        return memeTokenCt.totalSupply();
+    }
+
+    function getMarketCap(address memeTokenAddress) public view returns (uint256) {
+        memeToken storage listedToken = addressToMemeTokenMapping[memeTokenAddress];
+        return listedToken.fundingRaised;
+    }
+
+    function getRemainingSupply(address memeTokenAddress) public view returns (uint256) {
+        Token memeTokenCt = Token(memeTokenAddress);
+        uint256 currentSupply = memeTokenCt.totalSupply();
+        return MAX_SUPPLY - currentSupply;
+    }
+
     function getAllMemeTokens() public view returns (memeToken[] memory) {
         memeToken[] memory allTokens = new memeToken[](
             memeTokenAddresses.length
@@ -119,6 +136,8 @@ contract TokenFactory is ReentrancyGuard {
             payable(msg.sender).transfer(msg.value - requiredEth);
         }
 
+        listedToken.fundingRaised += msg.value;
+
         // Mint the available tokens for the buyer
         memeTokenCt.mint(tokenQty_scaled, msg.sender);
 
@@ -130,22 +149,50 @@ contract TokenFactory is ReentrancyGuard {
         return 1;
     }
 
+    function sellMemeToken(address memeTokenAddress, uint256 tokenQty) public nonReentrant returns (uint256) {
+    require(addressToMemeTokenMapping[memeTokenAddress].tokenAddress != address(0), "Token is not listed");
 
-    // // Trigger liquidity adding when all tokens are sold
-    // function _createLiquidityIfAllTokensSold(address memeTokenAddress, memeToken storage listedToken) internal {
-    //     Token memeTokenCt = Token(memeTokenAddress);
-    //     uint256 currentSupply = memeTokenCt.totalSupply();
+    memeToken storage listedToken = addressToMemeTokenMapping[memeTokenAddress];
+    Token memeTokenCt = Token(memeTokenAddress);
 
-    //     if (currentSupply >= MAX_SUPPLY) {
-    //         uint256 ethAmount = address(this).balance;
-    //         uint256 tokenAmount = INIT_SUPPLY; // Use the initial supply of 20% for liquidity
+    uint256 tokenQty_scaled = tokenQty * DECIMALS;
+    uint256 currentSupply = memeTokenCt.totalSupply();
 
-    //         // Create the liquidity pool and provide liquidity
-    //         address pool = _createLiquidityPool(memeTokenAddress);
-    //         uint256 liquidity = _provideLiquidity(memeTokenAddress, tokenAmount, ethAmount);
-    //         _burnLpTokens(pool, liquidity);
-    //     }
-    // }
+    // Ensure the seller has enough tokens to sell
+    require(memeTokenCt.balanceOf(msg.sender) >= tokenQty_scaled, "Insufficient token balance");
+
+    // Calculate the ETH refund based on the quantity of tokens being sold
+    uint256 ethToRefund = calculateRefund(currentSupply / DECIMALS, tokenQty);
+
+    // Ensure the contract has enough ETH to refund the seller
+    require(address(this).balance >= ethToRefund, "Contract has insufficient ETH");
+
+    // Burn the tokens being sold
+    memeTokenCt.burn(tokenQty_scaled);
+
+    // Transfer ETH to the seller
+    payable(msg.sender).transfer(ethToRefund);
+
+    // Update the amount of funding raised by subtracting the refunded amount
+    listedToken.fundingRaised -= ethToRefund;
+
+    return ethToRefund;
+}
+
+
+function calculateRefund(uint256 currentSupply, uint256 tokensToSell) public pure returns (uint256) {
+    uint256 linearDecrease = (tokensToSell * (tokensToSell - 1)) / 2;
+    uint256 totalBeforeK = tokensToSell * INITIAL_PRICE;
+    
+    uint256 kComponent = K * ((tokensToSell * currentSupply) - linearDecrease);
+    
+    // Ensure kComponent is not greater than totalBeforeK to avoid underflow
+    require(totalBeforeK >= kComponent, "Underflow in refund calculation");
+    
+    uint256 totalRefund = totalBeforeK - kComponent;
+
+    return totalRefund*9;
+}
 
 
     function _createLiquidityIfAllTokensSold(address memeTokenAddress, memeToken storage listedToken) internal {
@@ -221,3 +268,4 @@ contract TokenFactory is ReentrancyGuard {
         return 1;
     }
 }
+
