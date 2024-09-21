@@ -25,7 +25,6 @@ contract TokenFactory {
     mapping(address => memeToken) public addressToMemeTokenMapping;
 
     uint constant MEMETOKEN_CREATION_PLATFORM_FEE = 0.0001 ether;
-    uint constant MEMECOIN_FUNDING_DEADLINE_DURATION = 10 days;
     uint constant MEMECOIN_FUNDING_GOAL = 24 ether;
 
     address constant UNISWAP_V2_FACTORY_ADDRESS = 0xf45AFe28fd5519d5f8C1d4787a4D5f724C0eFa4d; // changed w the Punchswap fork
@@ -40,11 +39,13 @@ contract TokenFactory {
     uint256 public constant K = 8 * 10**15;  // Growth rate (k), scaled to avoid precision loss (0.01 * 10^18)
 
     // Function to calculate the cost in wei for purchasing `tokensToBuy` starting from `currentSupply`
-    function calculateCost(uint256 currentSupply, uint256 tokensToBuy) public pure returns (uint256) {
+    function calculateCost(address memeTokenAddress, uint256 tokensToBuy) public pure returns (uint256) {
+
+        Token memeTokenCt = Token(memeTokenAddress);
         
             // Calculate the exponent parts scaled to avoid precision loss
-        uint256 exponent1 = (K * (currentSupply + tokensToBuy)) / 10**18;
-        uint256 exponent2 = (K * currentSupply) / 10**18;
+        uint256 exponent1 = (K * (memeTokenCt.totalsuppyl() + tokensToBuy)) / 10**18;
+        uint256 exponent2 = (K * memeTokenCt.totalsuppyl()) / 10**18;
 
         // Calculate e^(kx) using the exp function
         uint256 exp1 = exp(exponent1);
