@@ -33,7 +33,7 @@ const Header = () => {
           <div className="hidden md:flex space-x-2">
             <Button
               onClick={() =>
-                window.open("https://x.com/flow_blockchain", "_blank")
+                window.open("https://x.com/pumpdotflow", "_blank")
               }
               variant="outline"
               size="sm"
